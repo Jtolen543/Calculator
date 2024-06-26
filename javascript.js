@@ -1,15 +1,155 @@
 let user = ""
+let operator = ""
+let operand_1 = ""
+let operand_2 = ""
+let equated = false // Ensures functionality where if user selects a number after pressing "=", then it resets both output and input
 
-const numbers = document.querySelectorAll(".container .input .btn-2")
+const numbers = document.querySelectorAll(".btn-2")
 numbers.forEach((number) => {
     number.addEventListener("click",() => {
-        if (user.length < 10 && number.id !== "delete") {
-            user += number.id
-            console.log(user)
+        if (operator.length === 1 && operand_2.length === 0) { // Checks if operator is assigned and operand_2 is empty
+            user = "" // meaning the click indicates a new input and reset user
         }
+        if (equated) {
+            operand_1 = ""
+            user = "0"
+            equated = false
+        }
+        if (user.length < 10 && number.id !== "delete") { 
+            if (user[0] === "0") { // If said number is the first input, then it sets user input to that number
+                user = number.id
+            }
+            else if (number.id === ".") { // prevents overflow of floating points
+                if (user.split(".").length < 2) {
+                    user += number.id
+                }
+            }
+            else { // Adds that number to the user input
+                user += number.id
+            }
+        }
+        else if (number.id === "delete" && user.length) { // Adds delete functionality
+            user = user.slice(0, user.length - 1)
+            if (user.length === 0) {
+                user = "0"
+            }
+        }
+        trackInput() 
+        updateDisplay()
     });
 });
 
-const display_1 = document.querySelector(".container .output .result")
-console.log(display_1)
-display_1.textContent = `${user}`
+const operations = document.querySelectorAll(".btn-3")
+operations.forEach((operation) => {
+    operation.addEventListener("click", () => {
+        if (operation.id === "multiply") {
+            operator = "x"
+            if (equated) {
+                equated = false
+            }
+        }
+        else if (operation.id === "divide") {
+            operator = "÷"
+            if (equated) {
+                equated = false
+            }
+        }
+        else if (operation.id === "add") {
+            operator = "+"
+            if (equated) {
+                equated = false
+            }
+        }
+        else if (operation.id === "subtract") {
+            operator = "-" 
+            if (equated) {
+                equated = false
+            }
+        }
+        else {
+            if (operand_1.length > 0 && operand_2.length > 0) {
+                user = combineOperation()
+                operand_1 = String(user)
+                operand_2 = ""
+                operator = ""
+                equated = true
+            }
+        }
+        updateDisplay()
+    });
+});
+
+const specials = document.querySelectorAll(".btn-1")
+console.log(specials)
+specials.forEach((special) => {
+    special.addEventListener("click", () => {
+        if (special.id === "clear") {
+            user = "0"
+            operator = ""
+            operand_1 = ""
+            operand_2 = ""
+            equated = false
+        }
+        else if (special.id === "percentage") {
+            if (user.length !== 0) {
+                user = (parseFloat(user) / 100)
+                user = user.toString()
+                if (user.length > 10) {
+                    user = (parseFloat(user).toExponential(4)).toString()
+                }
+            }
+        }
+        else if (special.id === "sign") {
+            if (operator.length === 1 && operand_1 !== 0) {
+                user = ""
+            }
+            else {
+                user = (parseFloat(user) * -1).toString()
+            }
+        }
+        trackInput()
+        updateDisplay()
+    });
+});
+
+function trackInput() {
+    if (operand_2 === "" && operator.length === 0) { // If the user hasn't selection an operation yet, then continue editing operand 1
+        operand_1 = user
+    }
+    else if (operand_1.length !== 0 && operator.length === 1) { // If user finishing operand 1 and selects an operator, continue to operand 2
+        operand_2 = user
+    }
+}
+
+function combineOperation() {
+    operand_1 = parseFloat(operand_1)
+    operand_2 = parseFloat(operand_2)
+    if (operator === "+") {
+        let answer = operand_1 + operand_2
+        return answer.toString().length <= 10 ? answer : answer.toExponential(4)
+    }
+    else if (operator === "-") {
+        let answer = operand_1 - operand_2
+        return answer.toString().length <= 10 ? answer : answer.toExponential(4)
+    }
+    else if (operator === "x") {
+        let answer = operand_1 * operand_2
+        return answer.toString().length <= 10 ? answer : answer.toExponential(4)
+    }
+    else {
+        if (operand_2 === 0) {
+            alert("ERROR: Division by Zero")
+            operand_2 = 1
+        }
+        let answer = operand_1 / operand_2
+        return answer.toString().length <= 10 ? answer : answer.toExponential(4)
+    }
+}
+
+function updateDisplay() {
+    const current_display = document.querySelector(".container .output .result")
+    const current_operation = document.querySelector(".container .output .operation")
+    current_display.textContent = `${user}`
+    current_operation.textContent = `${operand_1} ${operator} ${operand_2}`
+}
+
