@@ -39,9 +39,42 @@ numbers.forEach((number) => {
     });
 });
 
+document.addEventListener("keydown", (event) => { // Incorporates keyboard functionality
+    console.log(event.key)
+    if (operator.length === 1 && operand_2.length === 0 && event.key) { // Checks if operator is assigned and operand_2 is empty
+        user = "" // meaning the click indicates a new input and reset user
+    }
+    if (equated && "0123456789.".includes(event.key)) {
+        operand_1 = ""
+        user = "0"
+        equated = false
+    }
+    if (user.length < 10 && "0123456789.".includes(event.key)) { 
+        if (user[0] === "0") { // If said number is the first input, then it sets user input to that number
+            user = event.key
+        }
+        else if (event.key === ".") { // prevents overflow of floating points
+            if (user.split(".").length < 2) {
+                user += event.key
+            }
+        }
+        else { // Adds that number to the user input
+            user += event.key
+        }
+    }
+    else if (event.key === "Backspace" && user.length) { // Adds delete functionality
+        user = user.slice(0, user.length - 1)
+        if (user.length === 0) {
+            user = "0"
+        }
+    }
+    trackInput() 
+    updateDisplay()
+});
+
 const operations = document.querySelectorAll(".btn-3")
 operations.forEach((operation) => {
-    operation.addEventListener("click", () => {
+    operation.addEventListener("click", () => { // Handles the operation
         if (operation.id === "multiply") {
             operator = "x"
             if (equated) {
@@ -79,6 +112,47 @@ operations.forEach((operation) => {
     });
 });
 
+document.addEventListener("keydown", (event) => {
+    if (event.key === "x" || (event.key === "*")) {
+        operator = "x"
+        if (equated) {
+            equated = false
+        }
+    }
+    else if (event.key === "/") {
+        operator = "÷"
+        if (equated) {
+            equated = false
+        }
+    }
+    else if (event.key === "+") {
+        operator = "+"
+        if (equated) {
+            equated = false
+        }
+    }
+    else if (event.key === "_") {
+        operator = "-" 
+        if (equated) {
+            equated = false
+        }
+    }
+
+    else if (event.key === "Enter" || event.key === "=") {
+        operand_1 = operand_1.toString()
+        operand_2 = operand_2.toString()
+        if (operand_1.length > 0 && operand_2.length > 0) {
+            console.log('test2')
+            user = combineOperation()
+            operand_1 = String(user)
+            operand_2 = ""
+            operator = ""
+            equated = true
+        }
+    }
+    updateDisplay()
+})
+
 const specials = document.querySelectorAll(".btn-1")
 console.log(specials)
 specials.forEach((special) => {
@@ -100,17 +174,42 @@ specials.forEach((special) => {
             }
         }
         else if (special.id === "sign") {
-            if (operator.length === 1 && operand_1 !== 0) {
-                user = ""
-            }
-            else {
-                user = (parseFloat(user) * -1).toString()
+            user = (parseFloat(user) * -1).toString()
+            if (user.length > 10) {
+                user = (parseFloat(user).toExponential(4)).toString()
             }
         }
         trackInput()
         updateDisplay()
     });
 });
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Backspace" && event.shiftKey) {
+        user = "0"
+        operator = ""
+        operand_1 = ""
+        operand_2 = ""
+        equated = false
+    }
+    else if (event.key === "%") {
+        if (user.length !== 0) {
+            user = (parseFloat(user) / 100)
+            user = user.toString()
+            if (user.length > 10) {
+                user = (parseFloat(user).toExponential(4)).toString()
+            }
+        }
+    }
+    else if (event.key === "-") {
+        user = (parseFloat(user) * -1).toString()
+        if (user.length > 10) {
+            user = (parseFloat(user).toExponential(4)).toString()
+        }
+    }
+    // trackInput()
+    updateDisplay()
+})
 
 function trackInput() {
     if (operand_2 === "" && operator.length === 0) { // If the user hasn't selection an operation yet, then continue editing operand 1
