@@ -104,8 +104,8 @@ button {
 }
 
 .btn-3:hover {
-    background-color: rgb(252, 186, 65);
-    border-color: rgb(252, 186, 65);
+    background-color: rgb(238, 203, 139);
+    border-color: rgb(238, 203, 139);
     transition: background-color .25s, border-color .25s;
 }
 
